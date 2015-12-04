@@ -13,6 +13,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        RestApiManager.sharedInstance.requestBearerToken()
     }
 
     override func didReceiveMemoryWarning() {
@@ -21,6 +22,10 @@ class ViewController: UIViewController {
     }
 
     @IBAction func buttonPress(sender: AnyObject) {
-        RestApiManager.sharedInstance.requestBearerToken()
+        let query:String = "obama"
+        let results = RestApiManager.sharedInstance.basicSearch(query)
+        print(results)
     }
+    
+    
 }

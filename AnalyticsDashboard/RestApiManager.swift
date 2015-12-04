@@ -15,6 +15,31 @@ class RestApiManager: NSObject {
     
     let baseURL = "https://api.twitter.com"
     
+    var bearerToken = String()
+    
+    func basicSearch (query: String) -> JSON {
+        var json:JSON = [:]
+        let encodedQuery = query.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())
+        
+        let route = "\(baseURL)/1.1/search/tweets.json?q=\(encodedQuery!)"
+        let session = NSURLSession.sharedSession()
+        let request = NSMutableURLRequest(URL: NSURL(string: route)!)
+        
+        request.HTTPMethod = "GET"
+        request.setValue("Bearer \(self.bearerToken)", forHTTPHeaderField: "Authorization")
+        
+        let task = session.dataTaskWithRequest(request, completionHandler: { data, response, error -> Void in
+            json = JSON(data: data!)
+            print("----JSON----")
+            print(json)
+            print("--------------------")
+        })
+        
+        task.resume()
+        return json
+    }
+    
+    
     func requestBearerToken() {
         
         let route = "\(baseURL)/oauth2/token"
@@ -34,20 +59,8 @@ class RestApiManager: NSObject {
         request.HTTPBody = requestBodyData
         
         let task = session.dataTaskWithRequest(request, completionHandler: { data, response, error -> Void in
-            print("Response: \(response)")
-            let strData = NSString(data: data!, encoding: NSUTF8StringEncoding)
-            print("Body: \(strData)")
-            
-            do {
-                if let jsonResult = try NSJSONSerialization.JSONObjectWithData(data!, options: []) as? NSDictionary {
-                    print(jsonResult)
-                }
-            } catch let error as NSError {
-                print(error.localizedDescription)
-                let jsonStr = NSString(data: data!, encoding: NSUTF8StringEncoding)
-                print("Error could not parse JSON: '\(jsonStr)'")
-            }
-            
+            let json = JSON(data: data!)
+            self.bearerToken = json["access_token"].string!
         })
         
         task.resume()
